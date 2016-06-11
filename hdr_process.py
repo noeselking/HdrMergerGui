@@ -3,68 +3,85 @@
 
 import sys
 from PyQt5.QtWidgets import \
-    QApplication, QMainWindow, QFileDialog
+    QApplication, QMainWindow, QFileDialog, QTreeWidgetItem
 
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.uic import loadUi
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QFileInfo
 
 from hdr_merger_thread import HdrMergerThread
+from get_exif_info import getExifInfo
+
 
 class HdrDialog(QMainWindow):
     def __init__(self):
         super().__init__()
         loadUi("ui/gui.ui", self)
         self.initUi()
+        self.setWindowTitle("HdrMergerGui")
 
     def initUi(self):
         # connect all QT signals
         self.addFilesPushButton.clicked.connect(self.addFilesClicked)
         self.removeFilesPushButton.clicked.connect(self.removeFilesClicked)
         self.mergeToHdrPushButton.clicked.connect(self.mergeToHdrClicked)
-        self.fileListWidget.itemSelectionChanged.connect(self.itemSelectionChanged)
+        self.fileTreeWidget.itemSelectionChanged.connect(self.itemSelectionChanged)
 
         # initialize some variables
         self.mergerThread = None
         self.pauseUpdate = False
 
+
     def addFilesClicked(self):
         newFiles = QFileDialog.getOpenFileNames(self, "Please select the files to add to stack", "",
                                                 "Images (*.png *.jpg *.bmp)")
         for file in newFiles[0]:
-            entries = self.fileListWidget.findItems(file, Qt.MatchCaseSensitive)
+            entries = self.fileTreeWidget.findItems(file, Qt.MatchCaseSensitive)
             for entry in entries:
-                self.fileListWidget.takeItem(self.fileListWidget.row(entry))
-            self.fileListWidget.insertItem(self.fileListWidget.count(), file)
+                self.fileTreeWidget.takeItem(self.fileTreeWidget.row(entry))
+            item = QTreeWidgetItem()
+
+            fileInfo = QFileInfo(file)
+            fileInfo.fileName()
+
+            exif = getExifInfo(file)
+
+            item.setText(0, fileInfo.fileName())
+            item.setText(1, exif.exposureTime)
+            item.setText(2, exif.aperture)
+            item.setText(3, exif.ISO)
+            item.setText(4, fileInfo.absolutePath())
+            self.fileTreeWidget.insertTopLevelItem(self.fileTreeWidget.topLevelItemCount(), item)
 
     def removeFilesClicked(self):
         self.pauseUpdate = True
-        selected = self.fileListWidget.selectedItems()
+        selected = self.fileTreeWidget.selectedItems()
         for entry in selected:
-            self.fileListWidget.takeItem(self.fileListWidget.row(entry))
+            self.fileTreeWidget.takeTopLevelItem(self.fileTreeWidget.indexOfTopLevelItem(entry))
         self.previewLabel.clear()
         self.pauseUpdate = False
 
     def itemSelectionChanged(self):
         if not self.pauseUpdate:
-            selected = self.fileListWidget.selectedItems()
+            selected = self.fileTreeWidget.selectedItems()
             if len(selected) < 1:
                 self.previewLabel.clear()
             else:
                 image = QPixmap()
-                image.load(selected[0].text())
+                imagePath = selected[0].text(4) + "/" + selected[0].text(0)
+                image.load(imagePath)
                 widgetWidth = self.previewLabel.width()
                 self.previewLabel.setPixmap(image.scaledToWidth(widgetWidth))
 
     def mergeToHdrClicked(self):
-        if self.fileListWidget.count() == 0:
+        if self.fileTreeWidget.count() == 0:
             self.statusBar().showMessage("No files in stack.", 5000)
             return
 
         files = []
 
-        for index in range(self.fileListWidget.count()):
-            files.append(self.fileListWidget.item(index).text())
+        for index in range(self.fileTreeWidget.count()):
+            files.append(self.fileTreeWidget.item(index).text())
 
         filename = QFileDialog.getSaveFileName(self, "Save OpenEXR File", "", "OpenEXR Images (*.exr)")
         if filename[1] == "":

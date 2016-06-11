@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1780</width>
+    <width>2216</width>
     <height>1076</height>
    </rect>
   </property>
@@ -24,10 +24,35 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
-          <widget class="QListWidget" name="fileListWidget">
+          <widget class="QTreeWidget" name="fileTreeWidget">
            <property name="selectionMode">
             <enum>QAbstractItemView::ExtendedSelection</enum>
            </property>
+           <column>
+            <property name="text">
+             <string>Filename</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Exposure Time</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Aperture</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>ISO Speed</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Directory</string>
+            </property>
+           </column>
           </widget>
          </item>
          <item>
@@ -127,7 +152,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1780</width>
+     <width>2216</width>
      <height>40</height>
     </rect>
    </property>
