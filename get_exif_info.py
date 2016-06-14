@@ -1,9 +1,14 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
 import exifread
+
 
 class CameraInfo:
     aperture = None
     exposureTime = None
     ISO = None
+
 
 def getExifInfo(filename):
     with open(filename, 'rb') as file:

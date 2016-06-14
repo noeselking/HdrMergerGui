@@ -74,14 +74,16 @@ class HdrDialog(QMainWindow):
                 self.previewLabel.setPixmap(image.scaledToWidth(widgetWidth))
 
     def mergeToHdrClicked(self):
-        if self.fileTreeWidget.count() == 0:
+        if self.fileTreeWidget.topLevelItemCount() == 0:
             self.statusBar().showMessage("No files in stack.", 5000)
             return
 
         files = []
 
-        for index in range(self.fileTreeWidget.count()):
-            files.append(self.fileTreeWidget.item(index).text())
+        for index in range(self.fileTreeWidget.topLevelItemCount()):
+            item = self.fileTreeWidget.topLevelItem(index)
+            imagePath = item.text(4) + "/" + item.text(0)
+            files.append(imagePath)
 
         filename = QFileDialog.getSaveFileName(self, "Save OpenEXR File", "", "OpenEXR Images (*.exr)")
         if filename[1] == "":
